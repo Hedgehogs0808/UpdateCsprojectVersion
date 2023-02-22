@@ -1,0 +1,70 @@
+name: Update Project Version
+description: Update project and reference project version
+inputs:
+  targetDir:
+    description: Target Directory
+    required: true
+  repoList:
+    description: Repository list
+    required: true
+  githubToken:
+    description: GitHub token
+    required: false
+    default: ""
+  isCommit:
+    description: Commit the updated version of the project
+    type: boolean
+    required: false
+    default: false
+  addTag:
+    description: Add tag by updated version
+    type: boolean
+    required: false
+    default: false
+  updateUnit:
+    description: update flag[bit]
+    type: int
+    required: false
+    default: 4
+runs:
+  using: "composite"
+  steps:
+  - name: Chackout Code
+    uses: actions/checkout@v3
+    with: 
+      repository: Hedgehogs0808/UpdateCsprojectVersion
+      path: ./UpdateProjectVersion
+
+  - name: Update Project Version
+    id: update-project-version
+    shell: pwsh
+    run: |
+      $newver = (./UpdateProjectVersion/scripts/update_version.ps1 -src_dir ${{ inputs.targetDir }} -repo_list_csv ${{ inputs.repoList }} -update_unit ${{ inputs.updateUnit }})
+      Write-Output "new_version_no=$newver" >> $Env:GITHUB_OUTPUT
+    env:
+      GH_TOKEN: ${{ inputs.githubToken }}
+
+  - name: Commit Update Files
+    if: ${{ inputs.isCommit }}
+    shell: pwsh
+    run: |
+      git config core.filemode false
+      git add --update
+      git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      git config --local user.name "github-actions[bot]"
+      git commit -m "Commit updated files"
+      git push
+      Write-Output ${{ steps.update-project-version.outputs.new_version_no }}
+
+  - name: Add Tag
+    if: ( ${{ inputs.isCommit }} & ${{ inputs.addTag}} )
+    shell: pwsh
+    run: |
+      Write-Output ${{ steps.update-project-version.outputs.new_version_no }}
+      git tag -a ${{ steps.update-project-version.outputs.new_version_no }} -m ${{ steps.update-project-version.outputs.new_version_no }}
+      git push origin ${{ steps.update-project-version.outputs.new_version_no }}
+
+
+branding:
+  icon: arrow-up
+  color: green
