@@ -27,8 +27,6 @@ inputs:
     required: false
     default: 4
 runs:
-  env:
-    GH_TOKEN: ${{ inputs.githubToken }}
   using: "composite"
   steps:
   - name: Chackout Code
@@ -43,6 +41,8 @@ runs:
     run: |
       $newver = (./UpdateProjectVersion/scripts/update_version.ps1 -src_dir ${{ inputs.targetDir }} -repo_list_csv ${{ inputs.repoList }} -update_unit ${{ inputs.updateUnit }})
       Write-Output new_version_no=$newver >> $GITHUB_OUTPUT
+    env:
+      GH_TOKEN: ${{ inputs.githubToken }}
 
   - name: Commit Update Files
     if: ${{ inputs.isCommit }}
@@ -63,6 +63,7 @@ runs:
       Write-Output ${{ steps.update-project-version.outputs.new_version_no }}
       git tag -a ${{ steps.update-project-version.outputs.new_version_no }} -m ${{ steps.update-project-version.outputs.new_version_no }}
       git push origin ${{ steps.update-project-version.outputs.new_version_no }}
+
 
 branding:
   icon: arrow-up
