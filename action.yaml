@@ -28,6 +28,8 @@ inputs:
     default: 4
 runs:
   using: "composite"
+  env:
+    GH_TOKEN: ${{ inputs.githubToken }}
   steps:
   - name: Chackout Code
     uses: actions/checkout@v3
