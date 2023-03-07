@@ -26,9 +26,9 @@ inputs:
     type: int
     required: false
     default: 4
-env:
-  GH_TOKEN: ${{ inputs.githubToken }}
 runs:
+  env:
+    GH_TOKEN: ${{ inputs.githubToken }}
   using: "composite"
   steps:
   - name: Chackout Code
