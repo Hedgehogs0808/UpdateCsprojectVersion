@@ -26,10 +26,10 @@ inputs:
     type: int
     required: false
     default: 4
+env:
+  GH_TOKEN: ${{ inputs.githubToken }}
 runs:
   using: "composite"
-  env:
-    GH_TOKEN: ${{ inputs.githubToken }}
   steps:
   - name: Chackout Code
     uses: actions/checkout@v3
