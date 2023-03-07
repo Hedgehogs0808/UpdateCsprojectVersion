@@ -1,9 +1,16 @@
 param(
-    [string]$src_dir # ソースファイルのパス
+    [string]$src_dir, # ソースディレクトリのパス
+    [string]$repo_list_csv, # リポジトリ一覧のファイルパス
+    [int]$update_unit # アップデートの単位
 )
+
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+
+# リポジトリ一覧の読み込み(後々のためにハッシュ化する)
+$repositories_csv = Import-Csv $repo_list_csv
+$repositories_hash = $repositories_csv |  Group-Object -AsHashTable -AsString -Property PackageName
 
 # cprojファイルのバージョン情報の更新
 Push-Location $src_dir
@@ -19,7 +26,19 @@ foreach ($dir in $(Get-ChildItem * | ? { $_.PSIsContainer }))
             # ライブラリバージョンの更新
             $libver = $xml_nav.Select("/Project/PropertyGroup/Version")
             $majVer,$minVer,$bldVer = ([string]$libver).Split(".")
-            $majVer = [int]([int]$majVer+1);
+            if ($update_unit -band 4)
+            {
+                $majVer = [int]([int]$majVer+1);
+            }
+            if ($update_unit -band 2)
+            {
+                $minVer = [int]([int]$minVer+1);
+            }
+            if ($update_unit -band 1)
+            {
+                $bldVer = [int]([int]$bldVer+1);
+            }
+
             $newver = [string]$majVer + "." + $minVer + "." + $bldVer
             $libver.SetValue($newver);
             # 参照パッケージのバージョン情報の更新
@@ -29,7 +48,7 @@ foreach ($dir in $(Get-ChildItem * | ? { $_.PSIsContainer }))
                 try
                 {
                     $libName = $nodes.Current.getattribute("Include", "")
-                    $v=[string](gh release view -R https://github.com/maegawa-h/$libName)
+                    $v=[string](gh release view -R ($repositories_hash[$libName].Repository))
                     $v -match 'tag:\s(?<version>.*?)\s' >> $null
                     $version = $nodes.Current.Select("./@Version")
                     if ($Matches.version)

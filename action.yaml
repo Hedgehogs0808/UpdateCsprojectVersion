@@ -4,6 +4,9 @@ inputs:
   targetDir:
     description: Target Directory
     required: true
+  repoList:
+    description: Repository list
+    required: true
   githubToken:
     description: GitHub token
     required: false
@@ -18,6 +21,11 @@ inputs:
     type: boolean
     required: false
     default: false
+  updateUnit:
+    description: update flag[bit]
+    type: int
+    required: false
+    default: 4
 runs:
   using: "composite"
   steps:
@@ -31,7 +39,7 @@ runs:
     id: update-project-version
     shell: pwsh
     run: |
-      $newver = (./UpdateProjectVersion/scripts/update_version.ps1 -src_dir ${{ inputs.targetDir }})
+      $newver = (./UpdateProjectVersion/scripts/update_version.ps1 -src_dir ${{ inputs.targetDir }} -repo_list_csv ${{ inputs.repoList }} -update_unit ${{ inputs.updateUnit }})
       Write-Output new_version_no=$newver >> $GITHUB_OUTPUT
 
   - name: Commit Update Files
@@ -44,6 +52,7 @@ runs:
       git config --local user.name "github-actions[bot]"
       git commit -m "Commit updated files"
       git push
+      Write-Output ${{ steps.update-project-version.outputs.new_version_no }}
 
   - name: Add Tag
     if: ( ${{ inputs.isCommit }} & ${{ inputs.addTag}} )
