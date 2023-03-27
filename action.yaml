@@ -9,13 +9,12 @@ inputs:
     required: true
   githubToken:
     description: GitHub token
-    required: false
-    default: ""
+    required: true
   isCommit:
     description: Commit the updated version of the project
     type: boolean
     required: false
-    default: false
+    default: true
   addTag:
     description: Add tag by updated version
     type: boolean
