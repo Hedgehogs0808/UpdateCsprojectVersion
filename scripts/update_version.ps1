@@ -40,7 +40,7 @@ foreach ($dir in $(Get-ChildItem * | ? { $_.PSIsContainer }))
             }
             if ($update_unit -band 1)
             {
-                $patchVer = "." + [string](Get-Date -UFormat "%y%m%d");
+                $patchVer = "." + [string](Get-Date -UFormat "%y%m%d").Remove(0,1) # 65534 の制限のため先頭文字列を削除
             }
             $newver = [string]$majVer + $minVer + $bldVer + $patchVer
             $libver.SetValue($newver);
