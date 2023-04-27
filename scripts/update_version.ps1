@@ -29,10 +29,13 @@ foreach ($dir in $(Get-ChildItem * | ? { $_.PSIsContainer }))
             if ($update_unit -band 8)
             {
                 $majVer = [string]([int]$majVer + 1);
+                $minVer = [string]0;
+                $bldVer = [string]0;
             }
             if ($update_unit -band 4)
             {
                 $minVer = "." + [string]([int]$minVer + 1);
+                $bldVer = [string]0;
             }
             if ($update_unit -band 2)
             {
